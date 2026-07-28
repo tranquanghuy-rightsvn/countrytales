@@ -41,8 +41,7 @@ SECOND_CATEGORY_MAIN_COUNT = 8  # section-lifestyle: danh muc con lai, cot chinh
 SECOND_CATEGORY_ASIDE_COUNT = 5  # section-lifestyle: cot phu (aside)
 RECOMMEND_COUNT = 12  # section-latest "DANH CHO BAN": bai con lai chua hien o tren
 CATEGORY_LISTING_COUNT = 10  # trang danh muc: #news-latest.section-content, sau 8 bai dau (category-header)
-RELATED_SKIP_COUNT = 8  # trang bai viet: bo qua 8 bai moi nhat toan site (da la "bai chinh" o trang chu)
-RELATED_COUNT = 10  # trang bai viet: "BAI VIET LIEN QUAN" — 10 bai ke tiep toan site, khong phan biet danh muc
+RELATED_COUNT = 6  # trang bai viet: "BAI VIET LIEN QUAN" — toi da 6 bai CUNG danh muc, moi nhat truoc
 PLACEHOLDER_COVER = "/images/thumbnail-placeholder.svg"
 
 
@@ -294,19 +293,19 @@ def render_recommend_section(posts):
 
 
 def render_related_section(related_posts):
-    """Trang bai viet, cuoi trang: "BAI VIET LIEN QUAN" — giong het #news-latest.section.has-sidebar
-    cua cau-hinh-toi-thieu-....html. related_posts = 10 bai dung thu 9-18 toan site (bo qua 8 bai
-    moi nhat da la "bai chinh" o section-featured trang chu), khong phan biet danh muc."""
+    """Trang bai viet, cuoi trang: "BAI VIET LIEN QUAN" — giong het #article-nextreads >
+    #news-latest.section.has-sidebar cua cau-hinh-toi-thieu-....html. related_posts = toi da
+    6 bai CUNG danh muc voi bai dang xem (tu build_post_page), moi nhat truoc."""
     if not related_posts:
         return ""
-    grid = "\n".join(render_card(p) for p in related_posts)
+    grid = "\n".join(render_card(p, "znews-native type-text picked-featured") for p in related_posts)
     return """    <div class="page-wrapper">
         <section id="news-latest" class="section has-sidebar">
             <header class="section-title">
                 <h2>BÀI VIẾT LIÊN QUAN</h2>
             </header>
             <section class="section-content">
-                <div class="article-list listing-layout responsive" id="news-reference">
+                <div class="article-list listing-layout responsive infinite-load" id="news-reference">
 %s
                 </div>
                 <aside class="section-sidebar"></aside>
@@ -382,9 +381,9 @@ def build_post_page(detail, cat, posts, cfg, tpl):
 
     og_image = '    <meta property="og:image" content="%s">' % image_url if image_url else ""
 
-    # "BAI VIET LIEN QUAN": 10 bai dung thu 9-18 toan site (bo qua 8 bai moi nhat da la "bai chinh"
-    # o trang chu), khong phan biet danh muc, tru chinh bai dang xem.
-    related = [p for p in posts[RELATED_SKIP_COUNT:RELATED_SKIP_COUNT + RELATED_COUNT] if p["slug"] != slug]
+    # "BAI VIET LIEN QUAN": toi da 6 bai CUNG danh muc voi bai dang xem, moi nhat truoc, tru
+    # chinh no. posts da duoc main() sap moi nhat truoc san nen chi can loc + cat dau.
+    related = [p for p in posts if p.get("category_id") == cat["id"] and p["slug"] != slug][:RELATED_COUNT]
 
     page = (
         tpl.replace("{{TITLE}}", esc(detail["title"]))
