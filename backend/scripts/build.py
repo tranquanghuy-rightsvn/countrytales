@@ -152,7 +152,10 @@ def render_header(categories, site_name, logo=""):
     overflow_cats = categories[NAV_PC_MAX:]
 
     pc_items = "\n".join(
-        '          <li class="parent"><a href="/%s/" title="%s">%s</a></li>' % (c["slug"], esc(c["name"]), esc(c["name"]))
+        '          <li class="parent">\n'
+        '            <a href="/%s/" title="%s">%s</a>\n'
+        '            <div class="subcate">\n              <ul>\n              </ul>\n            </div>\n'
+        '          </li>' % (c["slug"], esc(c["name"]), esc(c["name"]))
         for c in pc_cats
     )
     if overflow_cats:
@@ -172,7 +175,10 @@ def render_header(categories, site_name, logo=""):
     )
 
     mobile_items = "\n".join(
-        '              <li class="parent"><a href="/%s/" title="%s">%s</a></li>' % (c["slug"], esc(c["name"]), esc(c["name"]))
+        '              <li class="parent">\n'
+        '                <a href="/%s/" title="%s">%s</a>\n'
+        '                <div class="subcate">\n                  <ul></ul>\n                </div>\n'
+        '              </li>' % (c["slug"], esc(c["name"]), esc(c["name"]))
         for c in categories
     )
 
@@ -225,9 +231,9 @@ def render_footer(site_name, tagline, pages):
 # ---------- card / section renderers ----------
 
 def render_card(post, modifier="type-text"):
-    desc = ""
-    if post.get("description"):
-        desc = '\n            <p class="article-summary">%s</p>' % esc(truncate(post["description"]))
+    # article-summary LUON co mat (ke ca rong) — dung nguyen cau truc that trong templates/
+    # (category.html, index.html): tag nay luon ton tai, CSS tu quyet dinh an/hien theo ngu canh
+    # (.article-item .article-summary{display:none} mac dinh, mot so context override display:block).
     return """        <article class="article-item %s">
             <p class="article-thumbnail">
                 <a href="/%s/">
@@ -237,9 +243,13 @@ def render_card(post, modifier="type-text"):
             <header>
                 <p class="article-title">
                     <a href="/%s/">%s</a>
-                </p>%s
+                </p>
+                <p class="article-summary">%s</p>
             </header>
-        </article>""" % (modifier, post["slug"], cover_of(post), esc(post["title"]), post["slug"], esc(post["title"]), desc)
+        </article>""" % (
+        modifier, post["slug"], cover_of(post), esc(post["title"]), post["slug"], esc(post["title"]),
+        esc(truncate(post.get("description", "")))
+    )
 
 
 def empty_note():
@@ -311,7 +321,8 @@ def render_related_section(related_posts):
     if not related_posts:
         return ""
     grid = "\n".join(render_card(p, "znews-native type-text picked-featured") for p in related_posts)
-    return """    <div class="page-wrapper">
+    return """    <div id="article-nextreads" class="">
+    <div id="trending" class="page-wrapper">
         <section id="news-latest" class="section has-sidebar">
             <header class="section-title">
                 <h2>BÀI VIẾT LIÊN QUAN</h2>
@@ -323,6 +334,7 @@ def render_related_section(related_posts):
                 <aside class="section-sidebar"></aside>
             </section>
         </section>
+    </div>
     </div>""" % grid
 
 
