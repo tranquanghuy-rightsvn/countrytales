@@ -3,7 +3,7 @@
 Build static HTML from data/ (run by GitHub Actions; stdlib only, no pip install needed).
 
 Input:
-  data/site.json                   # site_name / site_url / tagline (hand-edited config)
+  data/site.json                   # site_name / site_url / tagline / logo / banner — GAS ghi (tab "Cai dat website")
   data/categories.json             # danh muc, GAS ghi (index: id, name, slug, created_at)
   data/posts.json                  # bai viet, GAS ghi (index metadata, khong co content)
   data/posts/<slug>/detail.json    # noi dung day du 1 bai (content HTML + metadata)
@@ -77,7 +77,19 @@ def site_config():
         "site_name": cfg.get("site_name") or "CountryTales",
         "site_url": (cfg.get("site_url") or "https://countrytales.vn").rstrip("/"),
         "tagline": cfg.get("tagline") or "Tin tức mới nhất mỗi ngày",
+        # logo: hien o vi tri logo header (fallback ve text neu chua cau hinh/chua co file).
+        # banner: CHI dung lam og:image mac dinh cho trang chu/danh muc, khong hien truc tiep.
+        "logo": (cfg.get("logo") or "").strip().lstrip("/"),
+        "banner": (cfg.get("banner") or "").strip().lstrip("/"),
     }
+
+
+def og_image_tag(cfg):
+    """Meta og:image dung banner lam anh dai dien mac dinh cho trang khong co cover rieng
+    (trang chu, trang danh muc). Rong neu chua cau hinh banner — khong in tag gay hieu lam."""
+    if not cfg.get("banner"):
+        return ""
+    return '    <meta property="og:image" content="%s/%s">' % (cfg["site_url"], cfg["banner"])
 
 
 # ---------- nav (header/footer shared across every page) ----------
@@ -109,8 +121,10 @@ TOGGLE_SCRIPT = """    <script>
     </script>"""
 
 
-def render_header(categories, site_name):
-    """categories da o dung thu tu tao truoc -> sau (categories.json)."""
+def render_header(categories, site_name, logo=""):
+    """categories da o dung thu tu tao truoc -> sau (categories.json).
+    logo: duong dan tuong doi (vd "images/logo.png") -> hien <img>; rong -> fallback ve text
+    (vd truoc khi file anh that duoc day vao repo)."""
     pc_cats = categories[:NAV_PC_MAX]
     overflow_cats = categories[NAV_PC_MAX:]
 
@@ -139,6 +153,8 @@ def render_header(categories, site_name):
         for c in categories
     )
 
+    logo_inner = '<img src="/%s" alt="%s">' % (logo, esc(site_name)) if logo else esc(site_name)
+
     return """<header id="zing-header" class="scrollfixed">
     <div class="page-wrapper">
       <h1 class="logo"><a href="/" title="%s">%s</a></h1>
@@ -158,7 +174,7 @@ def render_header(categories, site_name):
       </nav>
     </div>
   </header>
-%s""" % (esc(site_name), esc(site_name), pc_items, mobile_items, TOGGLE_SCRIPT)
+%s""" % (esc(site_name), logo_inner, pc_items, mobile_items, TOGGLE_SCRIPT)
 
 
 def render_footer(site_name, tagline):
@@ -272,7 +288,7 @@ def build_post_page(detail, cat, cfg, tpl):
         .replace("{{CATEGORY_NAME}}", esc(cat["name"]))
         .replace("{{DATE_DISPLAY}}", date_display(published_iso))
         .replace("{{CONTENT}}", transform_content(detail.get("content", ""), slug))
-        .replace("{{HEADER}}", render_header(ALL_CATEGORIES, cfg["site_name"]))
+        .replace("{{HEADER}}", render_header(ALL_CATEGORIES, cfg["site_name"], cfg["logo"]))
         .replace("{{FOOTER}}", render_footer(cfg["site_name"], cfg["tagline"]))
     )
     out = HTML / slug / "index.html"
@@ -301,7 +317,8 @@ def build_category_page(cat, posts_in_cat, cfg, tpl):
         .replace("{{CATEGORY_URL}}", "/%s/" % slug)
         .replace("{{CATEGORY_NAME}}", esc(cat["name"]))
         .replace("{{CATEGORY_GRID}}", grid)
-        .replace("{{HEADER}}", render_header(ALL_CATEGORIES, cfg["site_name"]))
+        .replace("{{OG_IMAGE_TAG}}", og_image_tag(cfg))
+        .replace("{{HEADER}}", render_header(ALL_CATEGORIES, cfg["site_name"], cfg["logo"]))
         .replace("{{FOOTER}}", render_footer(cfg["site_name"], cfg["tagline"]))
     )
     out = HTML / slug / "index.html"
@@ -323,7 +340,8 @@ def build_homepage(categories, posts_by_category, cfg, tpl):
         .replace("{{URL}}", cfg["site_url"] + "/")
         .replace("{{SITE_NAME}}", esc(cfg["site_name"]))
         .replace("{{CATEGORY_SECTIONS}}", sections)
-        .replace("{{HEADER}}", render_header(categories, cfg["site_name"]))
+        .replace("{{OG_IMAGE_TAG}}", og_image_tag(cfg))
+        .replace("{{HEADER}}", render_header(categories, cfg["site_name"], cfg["logo"]))
         .replace("{{FOOTER}}", render_footer(cfg["site_name"], cfg["tagline"]))
     )
     (HTML / "index.html").write_text(page, encoding="utf-8")

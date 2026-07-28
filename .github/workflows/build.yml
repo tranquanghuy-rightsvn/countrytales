@@ -9,6 +9,7 @@ on:
     paths:
       - 'backend/data/categories.json'
       - 'backend/data/posts.json'
+      - 'backend/data/site.json'
   workflow_dispatch:
 
 permissions:

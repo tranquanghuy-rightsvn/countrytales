@@ -1,5 +1,7 @@
 {
   "site_name": "CountryTales",
   "site_url": "https://countrytales.vn",
-  "tagline": "Tin tức mới nhất mỗi ngày"
+  "tagline": "Tin tức mới nhất mỗi ngày",
+  "logo": "images/logo.png",
+  "banner": "images/banner.webp"
 }

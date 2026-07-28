@@ -10,12 +10,22 @@ footer .logo {
 }
 #zing-header h1.logo a,
 #zing-header a.logo {
+  display: flex;
+  align-items: center;
+  height: 100%;
   font-family: 'Roboto Condensed', Arial, Helvetica, sans-serif;
   font-weight: 700;
   font-size: 22px;
   letter-spacing: 0.5px;
   color: #111 !important;
-  line-height: 52px;
+}
+/* Logo dang anh (cau hinh o tab "Cai dat website") — gioi han cao de vua header 52px */
+#zing-header .logo img {
+  max-height: 36px;
+  max-width: 160px;
+  width: auto;
+  height: auto;
+  display: block;
 }
 footer .logo {
   height: auto;
