@@ -1,0 +1,3 @@
+# GAS admin code is deployed via clasp, not tracked in this repo.
+gas/
+.DS_Store

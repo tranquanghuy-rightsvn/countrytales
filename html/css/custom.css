@@ -1,0 +1,160 @@
+/* CountryTales additions on top of the cloned theme (main.css/page_common.css/footer.css) */
+
+/* Text-based logo (theme uses a background-image url(../images/logo.png) we don't have) */
+#zing-header .logo,
+#zing-header .logo a,
+#zing-header a.logo,
+footer .logo {
+  background-image: none !important;
+  text-indent: 0 !important;
+}
+#zing-header h1.logo a,
+#zing-header a.logo {
+  font-family: 'Roboto Condensed', Arial, Helvetica, sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.5px;
+  color: #111 !important;
+  line-height: 52px;
+}
+footer .logo {
+  height: auto;
+  font-family: 'Roboto Condensed', Arial, Helvetica, sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: #111;
+}
+
+/* PC nav: "more categories" overflow button + dropdown (categories beyond the first 8) */
+#zing-header .category-menu.pc > ul > li.more-cats {
+  position: relative;
+}
+#zing-header .category-menu.pc > ul > li.more-cats > button {
+  font: inherit;
+  font-weight: bold;
+  color: #444;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+#zing-header .category-menu.pc > ul > li.more-cats > button:hover {
+  color: #04b2f7;
+}
+#zing-header .category-menu.pc > ul > li.more-cats > button .caret {
+  display: inline-block;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  transition: transform 0.2s ease;
+}
+#zing-header .category-menu.pc > ul > li.more-cats.active > button .caret {
+  transform: rotate(180deg);
+}
+#zing-header .category-menu.pc .more-cats__panel {
+  display: none;
+  position: absolute;
+  top: 52px;
+  right: 0;
+  min-width: 200px;
+  background: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  padding: 8px 0;
+  z-index: 200;
+}
+#zing-header .category-menu.pc > ul > li.more-cats.active .more-cats__panel {
+  display: block;
+}
+#zing-header .category-menu.pc .more-cats__panel a {
+  display: block;
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: normal;
+  color: #333;
+  white-space: nowrap;
+}
+#zing-header .category-menu.pc .more-cats__panel a:hover {
+  color: #04b2f7;
+  background: #f7f7f7;
+}
+@media (max-width: 1140px) {
+  /* below this breakpoint the theme already hides every li except .more (mobile popup takes over) */
+  #zing-header .category-menu.pc > ul > li.more-cats {
+    display: none;
+  }
+}
+
+/* Homepage per-category sections */
+.category-section .section-title h2 a {
+  color: inherit;
+}
+.category-section .section-more {
+  float: right;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #333;
+  margin-top: 10px;
+}
+.category-section .section-more:hover {
+  color: #dd3333;
+}
+.category-section .article-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+.category-section .article-grid .article-item {
+  width: auto;
+}
+.category-section .empty-note {
+  color: #888;
+  font-size: 0.9rem;
+  padding: 10px 0;
+}
+@media (max-width: 1023px) {
+  .category-section .article-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+@media (max-width: 599px) {
+  .category-section .article-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Category listing page grid (backend/templates/category.html) */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+@media (max-width: 1023px) {
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 599px) {
+  .category-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Article cover (hero) on post page — explicit 3:2 box matching the CMS-side center crop */
+.the-article-cover {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.the-article-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}

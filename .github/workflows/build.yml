@@ -1,0 +1,53 @@
+name: Build HTML from data
+
+on:
+  push:
+    branches: [main]
+    # Chi trigger o categories.json/posts.json — luon la commit CUOI cua moi lan them/sua/xoa
+    # tren CMS. Nho vay CI khong bao gio build trang thai do dang, va moi thao tac chi build 1 lan.
+    # Commit cua CI (chi dung html/) khong tu trigger lai (xem .gitignore/README).
+    paths:
+      - 'backend/data/categories.json'
+      - 'backend/data/posts.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-html
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Build & push (retry neu co commit moi chen vao giua luc build)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for i in 1 2 3 4 5; do
+            python3 backend/scripts/build.py
+            git add html
+            if git diff --staged --quiet; then
+              echo "Khong co thay doi."
+              break
+            fi
+            git commit -m "CI: build html from data"
+            if git push origin HEAD:main; then
+              echo "Push thanh cong (lan $i)."
+              break
+            fi
+            if [ "$i" = "5" ]; then
+              echo "::error::Push that bai sau 5 lan thu."
+              exit 1
+            fi
+            echo "Push bi tu choi (co commit moi tren main) — fetch va build lai (lan $i)..."
+            git fetch origin main
+            git reset --hard origin/main
+          done

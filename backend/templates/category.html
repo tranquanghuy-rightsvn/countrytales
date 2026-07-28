@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>{{TITLE}}</title>
+    <meta name="description" content="{{DESCRIPTION}}">
+    <link rel="canonical" href="{{URL}}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{SITE_NAME}}">
+    <meta property="og:title" content="{{TITLE}}">
+    <meta property="og:description" content="{{DESCRIPTION}}">
+    <meta property="og:url" content="{{URL}}">
+    <link rel="stylesheet" type="text/css" href="/css/roboto.css">
+    <link rel="stylesheet" type="text/css" href="/css/noto-serif.css">
+    <link rel="stylesheet" type="text/css" href="/css/main.css">
+    <link rel="stylesheet" type="text/css" href="/css/footer.css">
+    <link rel="stylesheet" type="text/css" href="/css/page_common.css">
+    <link rel="stylesheet" type="text/css" href="/css/page_category.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+</head>
+<body id="page-category" class="refresh" cate-id="{{CATEGORY_SLUG}}">
+{{HEADER}}
+    <div class="page-wrapper">
+        <section id="category-header" class="section">
+            <h1><a href="{{CATEGORY_URL}}" title="{{CATEGORY_NAME}}">{{CATEGORY_NAME}}</a></h1>
+        </section>
+        <section id="news-latest" class="section">
+            <div class="section-content">
+                <div class="category-grid">
+{{CATEGORY_GRID}}
+                </div>
+            </div>
+        </section>
+    </div>
+{{FOOTER}}
+</body>
+</html>

@@ -1,0 +1,82 @@
+/* Article detail page (backend/templates/post.html) — cleaned up from the cloned theme's
+   inline .the-article-* rules (dropped the 340px sidebar gutter: we have no sidebar). */
+.the-article {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 0 60px;
+  position: relative;
+}
+.the-article-header {
+  width: 100%;
+  margin-bottom: 20px;
+}
+.the-article-category {
+  text-transform: uppercase;
+  font-family: Arial, Helvetica, sans-serif;
+  letter-spacing: 1px;
+  font-size: 0.85em;
+  font-weight: 700;
+}
+.the-article-category a {
+  color: #dd3333;
+}
+.the-article-category a:hover {
+  color: #3399cc;
+}
+.the-article-title {
+  font-family: 'Noto Serif', serif;
+  font-size: 2.2em;
+  color: #000;
+  line-height: 1.25;
+  letter-spacing: -0.5px;
+  margin: 12px 0;
+}
+.the-article-meta {
+  margin: 8px 0 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.85em;
+  color: #666;
+}
+.the-article-body {
+  width: 100%;
+  font-family: 'Noto Serif', serif;
+  color: #333;
+  line-height: 1.7;
+  font-size: 1.15em;
+}
+.the-article-body p {
+  margin: 18px 0;
+}
+.the-article-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+.the-article-body figure {
+  margin: 24px 0;
+}
+.the-article-body figcaption {
+  font-style: italic;
+  text-align: center;
+  font-size: 0.85em;
+  color: #666;
+  margin-top: 8px;
+}
+.the-article-body ul,
+.the-article-body ol {
+  padding-left: 32px;
+  margin: 18px 0;
+}
+.the-article-body a {
+  color: #004861;
+  border-bottom: 1px solid #0078a7;
+}
+@media (max-width: 719px) {
+  .the-article-title {
+    font-size: 1.6em;
+  }
+  .the-article-body {
+    font-size: 1em;
+  }
+}

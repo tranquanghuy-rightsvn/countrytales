@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>CountryTales – Tin tức mới nhất mỗi ngày</title>
+    <meta name="description" content="Tin tức mới nhất mỗi ngày">
+    <link rel="canonical" href="https://countrytales.vn/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="CountryTales">
+    <meta property="og:title" content="CountryTales – Tin tức mới nhất mỗi ngày">
+    <meta property="og:description" content="Tin tức mới nhất mỗi ngày">
+    <meta property="og:url" content="https://countrytales.vn/">
+    <link rel="stylesheet" type="text/css" href="/css/roboto.css">
+    <link rel="stylesheet" type="text/css" href="/css/noto-serif.css">
+    <link rel="stylesheet" type="text/css" href="/css/main.css">
+    <link rel="stylesheet" type="text/css" href="/css/footer.css">
+    <link rel="stylesheet" type="text/css" href="/css/page_common.css">
+    <link rel="stylesheet" type="text/css" href="/css/custom.css">
+</head>
+<body id="page-homepage" class="refresh">
+<header id="zing-header" class="scrollfixed">
+    <div class="page-wrapper">
+      <h1 class="logo"><a href="/" title="CountryTales">CountryTales</a></h1>
+      <nav class="category-menu pc">
+        <ul>
+
+          <li class="more">
+            <span class="dot dot1"></span><span class="dot dot2"></span><span class="dot dot3"></span>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    <div class="category-popup">
+      <nav class="category-menu mobile">
+        <div class="page-wrapper">
+          <ul class="normal-category">
+
+          </ul>
+        </div>
+      </nav>
+    </div>
+  </header>
+    <script>
+      document.querySelector('.more').addEventListener('click', function () {
+        var el = document.querySelector('.category-popup');
+        var isActive = el.classList.contains('active');
+        el.classList.toggle('active', !isActive);
+        el.style.visibility = isActive ? 'hidden' : 'visible';
+        el.style.opacity = isActive ? '0' : '1';
+        el.style.display = isActive ? 'none' : 'block';
+      });
+      document.querySelectorAll('.more-cats > button').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var li = btn.closest('li');
+          var willOpen = !li.classList.contains('active');
+          document.querySelectorAll('.more-cats.active').forEach(function (el) { el.classList.remove('active'); });
+          if (willOpen) li.classList.add('active');
+        });
+      });
+      document.addEventListener('click', function (e) {
+        if (!e.target.closest('.more-cats')) {
+          document.querySelectorAll('.more-cats.active').forEach(function (el) { el.classList.remove('active'); });
+        }
+      });
+    </script>
+    <div class="page-wrapper">
+        <p class="empty-note">Chưa có danh mục nào.</p>
+    </div>
+<footer id="footer">
+    <div class="page-wrapper footer-wrapper">
+      <div class="left-side-info">
+        <div class="web-info">
+          <div class="logo">CountryTales</div>
+          <p style="line-height: 1.7; font-size: 12px">Tin tức mới nhất mỗi ngày</p>
+        </div>
+      </div>
+      <div class="copyright-info">
+        <p style="line-height: 1.7; font-size: 12px">© CountryTales</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
