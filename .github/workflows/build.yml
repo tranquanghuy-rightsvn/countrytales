@@ -57,11 +57,13 @@ jobs:
       # Deploy truc tiep bang wrangler (Direct Upload) — KHONG di qua Cloudflare git integration,
       # nen KHONG tinh vao quota 500 build/thang cua Cloudflare Pages free tier. Deploy dung ban
       # html/ vua build o buoc tren, khong phu thuoc Cloudflare tu clone lai repo.
-      # Yeu cau: project Cloudflare Pages da tao san dang "Direct Upload" (khong noi git),
-      # va 2 secret CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID da khai bao trong repo Settings.
-      - name: Deploy to Cloudflare Pages
+      # Project thuc te tren Cloudflare la mot Worker co gan static assets (dashboard "Workers &
+      # Pages" mac dinh tao Worker chu khong phai Pages project co dien) — nen deploy bang
+      # `wrangler deploy` (doc cau hinh o wrangler.toml o goc repo), khong phai `wrangler pages deploy`.
+      # Yeu cau: API token co quyen Account > Workers Scripts > Edit (khong phai Cloudflare Pages).
+      - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy html --project-name=countrytales --branch=master
+          command: deploy
