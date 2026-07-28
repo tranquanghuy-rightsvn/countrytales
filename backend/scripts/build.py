@@ -517,27 +517,26 @@ def build_homepage(categories, posts, posts_by_category, cfg, tpl):
     """Bo cuc trang chu bam sat templates/index.html:
     - 1 page-wrapper dau: section-featured (8 bai moi nhat toan site)
       + section-multimedia (danh muc dau tien, nen vang, toi da 5 bai)
-      + section-latest "DANH CHO BAN" (bai con lai chua hien o tren, toi da 12 bai)
+      + section-latest "DANH CHO BAN" (12 bai moi nhat tiep theo, TINH THEO VI TRI
+        sau 8 bai dau — khong loai tru bai da xuat hien o section-multimedia, dung
+        nhu templates/index.html: cac khoi widget doc lap, khong dedup lan nhau)
     - Moi danh muc con lai: 1 page-wrapper rieng, section-lifestyle (second-category)."""
     title = "%s – %s" % (cfg["site_name"], cfg["tagline"])
     description = cfg["tagline"]
 
     top_group = []
-    shown_slugs = set()
 
     featured_posts = posts[:HOMEPAGE_FEATURED_COUNT]
     featured_section = render_featured_section(featured_posts)
     if featured_section:
         top_group.append(featured_section)
-        shown_slugs.update(p["slug"] for p in featured_posts)
 
     first_cat, rest_cats = (categories[0], categories[1:]) if categories else (None, [])
     if first_cat:
         first_cat_posts = posts_by_category.get(first_cat["id"], [])
         top_group.append(render_first_category_section(first_cat, first_cat_posts))
-        shown_slugs.update(p["slug"] for p in first_cat_posts[:FIRST_CATEGORY_COUNT])
 
-    remaining_posts = [p for p in posts if p["slug"] not in shown_slugs]
+    remaining_posts = posts[HOMEPAGE_FEATURED_COUNT:HOMEPAGE_FEATURED_COUNT + RECOMMEND_COUNT]
     recommend_section = render_recommend_section(remaining_posts)
     if recommend_section:
         top_group.append(recommend_section)
