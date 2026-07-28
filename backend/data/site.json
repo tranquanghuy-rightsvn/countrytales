@@ -3,5 +3,6 @@
   "tagline": "Tin tức mới nhất mỗi ngày",
   "site_url": "https://countrytales.net",
   "logo": "images/logo.png",
-  "banner": "images/banner.webp"
+  "banner": "images/banner.webp",
+  "favicon": "images/favicon.png"
 }

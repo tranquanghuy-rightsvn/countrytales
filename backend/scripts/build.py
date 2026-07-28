@@ -90,9 +90,18 @@ def site_config():
         "tagline": cfg.get("tagline") or "Tin tức mới nhất mỗi ngày",
         # logo: hien o vi tri logo header (fallback ve text neu chua cau hinh/chua co file).
         # banner: CHI dung lam og:image mac dinh cho trang chu/danh muc, khong hien truc tiep.
+        # favicon: PNG vuong 24x24, hien trong tab trinh duyet moi trang.
         "logo": (cfg.get("logo") or "").strip().lstrip("/"),
         "banner": (cfg.get("banner") or "").strip().lstrip("/"),
+        "favicon": (cfg.get("favicon") or "").strip().lstrip("/"),
     }
+
+
+def favicon_tag(cfg):
+    """<link rel=icon>, dung chung cho moi trang. Rong neu chua cau hinh favicon."""
+    if not cfg.get("favicon"):
+        return ""
+    return '    <link rel="icon" type="image/png" sizes="24x24" href="/%s">' % cfg["favicon"]
 
 
 def og_image_tag(cfg):
@@ -391,6 +400,7 @@ def build_post_page(detail, cat, posts, cfg, tpl):
         .replace("{{URL}}", url)
         .replace("{{SITE_NAME}}", esc(cfg["site_name"]))
         .replace("{{OG_IMAGE_TAG}}", og_image)
+        .replace("{{FAVICON_TAG}}", favicon_tag(cfg))
         .replace("{{PUBLISHED_ISO}}", esc(published_iso))
         .replace("{{JSON_LD}}", json_ld)
         .replace("{{CATEGORY_URL}}", "/%s/" % cat["slug"])
@@ -440,6 +450,7 @@ def build_category_page(cat, posts_in_cat, cfg, tpl):
         .replace("{{CATEGORY_TRENDING}}", trending_html)
         .replace("{{CATEGORY_MORE}}", more_html)
         .replace("{{OG_IMAGE_TAG}}", og_image_tag(cfg))
+        .replace("{{FAVICON_TAG}}", favicon_tag(cfg))
         .replace("{{HEADER}}", render_header(ALL_CATEGORIES, cfg["site_name"], cfg["logo"]))
         .replace("{{FOOTER}}", render_footer(cfg["site_name"], cfg["tagline"], ALL_PAGES))
     )
@@ -475,6 +486,7 @@ def build_page(page, cfg, tpl):
         .replace("{{URL}}", url)
         .replace("{{SITE_NAME}}", esc(cfg["site_name"]))
         .replace("{{OG_IMAGE_TAG}}", og_image_tag(cfg))
+        .replace("{{FAVICON_TAG}}", favicon_tag(cfg))
         .replace("{{JSON_LD}}", json_ld)
         .replace("{{CONTENT}}", transform_content(page.get("content", ""), slug))
         .replace("{{HEADER}}", render_header(ALL_CATEGORIES, cfg["site_name"], cfg["logo"]))
@@ -533,6 +545,7 @@ def build_homepage(categories, posts, posts_by_category, cfg, tpl):
         .replace("{{SITE_NAME}}", esc(cfg["site_name"]))
         .replace("{{CATEGORY_SECTIONS}}", sections)
         .replace("{{OG_IMAGE_TAG}}", og_image_tag(cfg))
+        .replace("{{FAVICON_TAG}}", favicon_tag(cfg))
         .replace("{{HEADER}}", render_header(categories, cfg["site_name"], cfg["logo"]))
         .replace("{{FOOTER}}", render_footer(cfg["site_name"], cfg["tagline"], ALL_PAGES))
     )
