@@ -1,5 +1,7 @@
 name = "countrytales"
+main = "worker/admin-proxy.js"
 compatibility_date = "2025-01-01"
 
 [assets]
 directory = "./html"
+binding = "ASSETS"
