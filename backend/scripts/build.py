@@ -36,9 +36,12 @@ TEMPLATES = BACKEND / "templates"
 HOMEPAGE_FEATURED_COUNT = 8  # section-featured: 8 bai moi nhat toan site (3 featured + 5 trending)
 FEATURED_MAIN_COUNT = 3
 FEATURED_ASIDE_COUNT = 5
-FIRST_CATEGORY_COUNT = 6  # section-multimedia: danh muc dau tien, nen vang, toi da 6 bai
-SECOND_CATEGORY_MAIN_COUNT = 8  # section-lifestyle: danh muc con lai, cot chinh
-SECOND_CATEGORY_ASIDE_COUNT = 5  # section-lifestyle: cot phu (aside)
+# Cac so duoi day KHONG phai suy doan — lay dung tu CSS that trong <style> noi tuyen cua
+# templates/index.html (xem html/css/homepage.css), vi CSS o do quyet dinh may bai THUC SU
+# hien ra (qua :nth-child/:nth-of-type + display:none), khong phai so bai minh render ra HTML.
+FIRST_CATEGORY_COUNT = 5  # .multimedia-layout .article-item:nth-of-type(n+6){display:none} -> hien dung 5
+SECOND_CATEGORY_MAIN_COUNT = 3  # #page-homepage #section-lifestyle [newsfeatured] item:nth-child(n+4){display:none} -> hien dung 3
+SECOND_CATEGORY_ASIDE_COUNT = 5  # #page-homepage #section-lifestyle [newstrending] item:nth-child(n+6){display:none} -> hien dung 5
 RECOMMEND_COUNT = 12  # section-latest "DANH CHO BAN": bai con lai chua hien o tren
 CATEGORY_LISTING_COUNT = 10  # trang danh muc: #news-latest.section-content, sau 8 bai dau (category-header)
 RELATED_COUNT = 6  # trang bai viet: "BAI VIET LIEN QUAN" — toi da 6 bai CUNG danh muc, moi nhat truoc
@@ -266,7 +269,7 @@ def render_featured_section(top_posts):
 
 def render_first_category_section(cat, posts_in_cat):
     """Danh muc dau tien: nen vang (#section-multimedia co ::before mau #ffde76 trong
-    page_common.css), toi da 6 bai, layout multimedia-layout (bai dau to, giua trang)."""
+    page_common.css), toi da 5 bai (xem FIRST_CATEGORY_COUNT), layout multimedia-layout (bai dau to, giua trang)."""
     shown = posts_in_cat[:FIRST_CATEGORY_COUNT]
     grid = "\n".join(render_card(p, "znews-native type-picture picked-multi short") for p in shown) or empty_note()
     return """        <section id="section-multimedia" class="section first-category">
@@ -501,7 +504,7 @@ def build_page(page, cfg, tpl):
 def build_homepage(categories, posts, posts_by_category, cfg, tpl):
     """Bo cuc trang chu bam sat templates/index.html:
     - 1 page-wrapper dau: section-featured (8 bai moi nhat toan site)
-      + section-multimedia (danh muc dau tien, nen vang, toi da 6 bai)
+      + section-multimedia (danh muc dau tien, nen vang, toi da 5 bai)
       + section-latest "DANH CHO BAN" (bai con lai chua hien o tren, toi da 12 bai)
     - Moi danh muc con lai: 1 page-wrapper rieng, section-lifestyle (second-category)."""
     title = "%s – %s" % (cfg["site_name"], cfg["tagline"])
