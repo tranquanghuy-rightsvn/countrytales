@@ -98,73 +98,8 @@ footer .logo {
   }
 }
 
-/* Homepage per-category sections */
-.category-section .section-title h2 a {
-  color: inherit;
-}
-.category-section .section-more {
-  float: right;
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: #333;
-  margin-top: 10px;
-}
-.category-section .section-more:hover {
-  color: #dd3333;
-}
-.category-section .article-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-}
-.category-section .article-grid .article-item {
-  width: auto;
-}
-.category-section .empty-note {
+.empty-note {
   color: #888;
   font-size: 0.9rem;
   padding: 10px 0;
-}
-@media (max-width: 1023px) {
-  .category-section .article-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
-}
-@media (max-width: 599px) {
-  .category-section .article-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Category listing page grid (backend/templates/category.html) */
-.category-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-@media (max-width: 1023px) {
-  .category-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 599px) {
-  .category-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Article cover (hero) on post page — explicit 3:2 box matching the CMS-side center crop */
-.the-article-cover {
-  width: 100%;
-  aspect-ratio: 3 / 2;
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-.the-article-cover img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
 }

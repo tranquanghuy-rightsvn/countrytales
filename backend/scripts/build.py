@@ -40,6 +40,9 @@ FIRST_CATEGORY_COUNT = 6  # section-multimedia: danh muc dau tien, nen vang, toi
 SECOND_CATEGORY_MAIN_COUNT = 8  # section-lifestyle: danh muc con lai, cot chinh
 SECOND_CATEGORY_ASIDE_COUNT = 5  # section-lifestyle: cot phu (aside)
 RECOMMEND_COUNT = 12  # section-latest "DANH CHO BAN": bai con lai chua hien o tren
+CATEGORY_LISTING_COUNT = 10  # trang danh muc: #news-latest.section-content, sau 8 bai dau (category-header)
+RELATED_SKIP_COUNT = 8  # trang bai viet: bo qua 8 bai moi nhat toan site (da la "bai chinh" o trang chu)
+RELATED_COUNT = 10  # trang bai viet: "BAI VIET LIEN QUAN" — 10 bai ke tiep toan site, khong phan biet danh muc
 PLACEHOLDER_COVER = "/images/thumbnail-placeholder.svg"
 
 
@@ -290,6 +293,28 @@ def render_recommend_section(posts):
         </section>""" % grid
 
 
+def render_related_section(related_posts):
+    """Trang bai viet, cuoi trang: "BAI VIET LIEN QUAN" — giong het #news-latest.section.has-sidebar
+    cua cau-hinh-toi-thieu-....html. related_posts = 10 bai dung thu 9-18 toan site (bo qua 8 bai
+    moi nhat da la "bai chinh" o section-featured trang chu), khong phan biet danh muc."""
+    if not related_posts:
+        return ""
+    grid = "\n".join(render_card(p) for p in related_posts)
+    return """    <div class="page-wrapper">
+        <section id="news-latest" class="section has-sidebar">
+            <header class="section-title">
+                <h2>BÀI VIẾT LIÊN QUAN</h2>
+            </header>
+            <section class="section-content">
+                <div class="article-list listing-layout responsive" id="news-reference">
+%s
+                </div>
+                <aside class="section-sidebar"></aside>
+            </section>
+        </section>
+    </div>""" % grid
+
+
 def render_second_category_section(cat, posts_in_cat):
     """Danh muc thu 2 tro di: cot chinh toi da 8 bai + cot phu (aside) toi da 5 bai tiep theo,
     giong het section-lifestyle (class second-category) cua templates/index.html."""
@@ -329,42 +354,51 @@ def strip_html(s):
 
 # ---------- builders ----------
 
-def build_post_page(detail, cat, cfg, tpl):
+def build_post_page(detail, cat, posts, cfg, tpl):
+    """posts: TOAN BO bai viet (da sap moi nhat truoc, tu main()) — dung de tinh 'BAI VIET LIEN QUAN'."""
     slug = detail["slug"]
     url = "%s/%s/" % (cfg["site_url"], slug)
-    cover_url = cfg["site_url"] + cover_of(detail)
+    # og:image/JSON-LD: uu tien cover that cua bai; khong co thi fallback ve banner site (KHONG
+    # dung placeholder SVG noi bo — anh dai dien MXH phai la anh that hoac khong co gi ca).
+    image_path = detail.get("cover") or cfg.get("banner")
+    image_url = "%s/%s" % (cfg["site_url"], image_path) if image_path else None
     description = truncate(detail.get("description") or strip_html(detail.get("content", "")), 220)
     published_iso = detail.get("created_at") or ""
 
-    json_ld = json.dumps(
-        {
-            "@context": "https://schema.org",
-            "@type": "NewsArticle",
-            "mainEntityOfPage": {"@type": "WebPage", "@id": url},
-            "headline": detail["title"],
-            "description": description,
-            "image": [cover_url],
-            "datePublished": published_iso,
-            "dateModified": detail.get("updated_at") or published_iso,
-            "author": {"@type": "Organization", "name": cfg["site_name"]},
-            "publisher": {"@type": "Organization", "name": cfg["site_name"]},
-        },
-        ensure_ascii=False,
-        indent=2,
-    )
+    json_ld_obj = {
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        "mainEntityOfPage": {"@type": "WebPage", "@id": url},
+        "headline": detail["title"],
+        "description": description,
+        "datePublished": published_iso,
+        "dateModified": detail.get("updated_at") or published_iso,
+        "author": {"@type": "Organization", "name": cfg["site_name"]},
+        "publisher": {"@type": "Organization", "name": cfg["site_name"]},
+    }
+    if image_url:
+        json_ld_obj["image"] = [image_url]
+    json_ld = json.dumps(json_ld_obj, ensure_ascii=False, indent=2)
+
+    og_image = '    <meta property="og:image" content="%s">' % image_url if image_url else ""
+
+    # "BAI VIET LIEN QUAN": 10 bai dung thu 9-18 toan site (bo qua 8 bai moi nhat da la "bai chinh"
+    # o trang chu), khong phan biet danh muc, tru chinh bai dang xem.
+    related = [p for p in posts[RELATED_SKIP_COUNT:RELATED_SKIP_COUNT + RELATED_COUNT] if p["slug"] != slug]
 
     page = (
         tpl.replace("{{TITLE}}", esc(detail["title"]))
         .replace("{{DESCRIPTION}}", esc(description))
         .replace("{{URL}}", url)
         .replace("{{SITE_NAME}}", esc(cfg["site_name"]))
-        .replace("{{COVER_URL}}", cover_url)
+        .replace("{{OG_IMAGE_TAG}}", og_image)
         .replace("{{PUBLISHED_ISO}}", esc(published_iso))
         .replace("{{JSON_LD}}", json_ld)
         .replace("{{CATEGORY_URL}}", "/%s/" % cat["slug"])
         .replace("{{CATEGORY_NAME}}", esc(cat["name"]))
         .replace("{{DATE_DISPLAY}}", date_display(published_iso))
         .replace("{{CONTENT}}", transform_content(detail.get("content", ""), slug))
+        .replace("{{RELATED_SECTION}}", render_related_section(related))
         .replace("{{HEADER}}", render_header(ALL_CATEGORIES, cfg["site_name"], cfg["logo"]))
         .replace("{{FOOTER}}", render_footer(cfg["site_name"], cfg["tagline"], ALL_PAGES))
     )
@@ -375,15 +409,25 @@ def build_post_page(detail, cat, cfg, tpl):
 
 
 def build_category_page(cat, posts_in_cat, cfg, tpl):
+    """Bam sat am-thuc.html that: giong het khoi "8 bai chinh" cua trang chu (3 featured +
+    5 trending, nhung gioi han trong CHINH danh muc nay, khong tron danh muc khac), roi toi
+    #news-latest.section-content rieng cho 10 bai tiep theo. Khac trang chu: co ten danh muc,
+    KHONG co cac section "danh muc khac"."""
     slug = cat["slug"]
     url = "%s/%s/" % (cfg["site_url"], slug)
     title = "%s – %s" % (cat["name"], cfg["site_name"])
     description = "Toàn bộ bài viết thuộc danh mục %s trên %s." % (cat["name"], cfg["site_name"])
 
-    if posts_in_cat:
-        grid = "\n".join(render_card(p) for p in posts_in_cat)
-    else:
-        grid = '                <p class="empty-note">Chưa có bài viết trong danh mục này.</p>'
+    featured = posts_in_cat[:FEATURED_MAIN_COUNT]
+    trending = posts_in_cat[FEATURED_MAIN_COUNT:FEATURED_MAIN_COUNT + FEATURED_ASIDE_COUNT]
+    more = posts_in_cat[
+        FEATURED_MAIN_COUNT + FEATURED_ASIDE_COUNT:
+        FEATURED_MAIN_COUNT + FEATURED_ASIDE_COUNT + CATEGORY_LISTING_COUNT
+    ]
+
+    featured_html = "\n".join(render_card(p, "type-text picked-featured") for p in featured) or empty_note()
+    trending_html = "\n".join(render_card(p, "type-text picked-trending short") for p in trending)
+    more_html = "\n".join(render_card(p) for p in more)
 
     page = (
         tpl.replace("{{TITLE}}", esc(title))
@@ -393,7 +437,9 @@ def build_category_page(cat, posts_in_cat, cfg, tpl):
         .replace("{{CATEGORY_SLUG}}", slug)
         .replace("{{CATEGORY_URL}}", "/%s/" % slug)
         .replace("{{CATEGORY_NAME}}", esc(cat["name"]))
-        .replace("{{CATEGORY_GRID}}", grid)
+        .replace("{{CATEGORY_FEATURED}}", featured_html)
+        .replace("{{CATEGORY_TRENDING}}", trending_html)
+        .replace("{{CATEGORY_MORE}}", more_html)
         .replace("{{OG_IMAGE_TAG}}", og_image_tag(cfg))
         .replace("{{HEADER}}", render_header(ALL_CATEGORIES, cfg["site_name"], cfg["logo"]))
         .replace("{{FOOTER}}", render_footer(cfg["site_name"], cfg["tagline"], ALL_PAGES))
@@ -555,7 +601,7 @@ def main():
         if not detail_path.exists():
             print("WARN: thiếu", detail_path.relative_to(ROOT), "- bỏ qua")
             continue
-        build_post_page(load_json(detail_path, {}), cat, cfg, post_tpl)
+        build_post_page(load_json(detail_path, {}), cat, posts, cfg, post_tpl)
         built += 1
 
     for cat in categories:

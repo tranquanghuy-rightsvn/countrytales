@@ -25,14 +25,24 @@
 {{HEADER}}
     <div class="page-wrapper">
         <section id="category-header" class="section">
-            <h1><a href="{{CATEGORY_URL}}" title="{{CATEGORY_NAME}}">{{CATEGORY_NAME}}</a></h1>
-        </section>
-        <section id="news-latest" class="section">
+            <h1 style="margin-top: 40px"><a href="{{CATEGORY_URL}}" title="{{CATEGORY_NAME}}">{{CATEGORY_NAME}}</a></h1>
             <div class="section-content">
-                <div class="category-grid">
-{{CATEGORY_GRID}}
+                <div data-content="newsfeatured" class="article-list" id="category-list-1">
+{{CATEGORY_FEATURED}}
+                </div>
+                <div data-content="newstrending" class="article-list listing-layout" id="category-list-2">
+{{CATEGORY_TRENDING}}
                 </div>
             </div>
+        </section>
+    </div>
+    <div class="page-wrapper">
+        <section id="news-latest" class="section has-sidebar">
+            <section class="section-content">
+                <div class="article-list listing-layout responsive" id="category-list-3">
+{{CATEGORY_MORE}}
+                </div>
+            </section>
         </section>
     </div>
 {{FOOTER}}
