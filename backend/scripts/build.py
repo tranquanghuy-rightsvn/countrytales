@@ -7,14 +7,17 @@ Input:
   data/categories.json             # danh muc, GAS ghi (index: id, name, slug, created_at)
   data/posts.json                  # bai viet, GAS ghi (index metadata, khong co content)
   data/posts/<slug>/detail.json    # noi dung day du 1 bai (content HTML + metadata)
-  templates/index.html, category.html, post.html
-  html/<slug>/images/*             # anh da duoc GAS day thang vao day (cover + anh trong bai)
+  data/pages.json                  # trang tinh (gioi thieu/lien he/chinh sach...), GAS ghi
+  data/pages/<slug>/detail.json    # noi dung day du 1 trang tinh — khong danh muc, khong cover
+  templates/index.html, category.html, post.html, page.html
+  html/<slug>/images/*             # anh da duoc GAS day thang vao day (cover + anh trong bai/trang)
 
 Output:
   html/index.html                  # trang chu: 1 section/danh muc, theo dung thu tu tao truoc -> sau
   html/<category-slug>/index.html  # trang danh muc: toan bo bai trong danh muc, moi nhat truoc
   html/<post-slug>/index.html      # trang bai viet
-  html/sitemap.xml                 # trang chu + moi danh muc + moi bai viet
+  html/<page-slug>/index.html      # trang tinh — hien link o footer moi trang, thu tu tao truoc -> sau
+  html/sitemap.xml                 # trang chu + moi danh muc + moi bai viet + moi trang tinh
 
 Chay local de thu: python3 scripts/build.py
 """
@@ -177,7 +180,13 @@ def render_header(categories, site_name, logo=""):
 %s""" % (esc(site_name), logo_inner, pc_items, mobile_items, TOGGLE_SCRIPT)
 
 
-def render_footer(site_name, tagline):
+def render_footer(site_name, tagline, pages):
+    """pages: [{slug, title}], da o dung thu tu tao truoc -> sau (pages.json)."""
+    if pages:
+        links = "\n          ".join('<a href="/%s/">%s</a><br>' % (p["slug"], esc(p["title"])) for p in pages)
+        links_block = '\n        <p style="line-height: 1.7; font-size: 12px">\n          %s\n        </p>' % links
+    else:
+        links_block = ""
     return """<footer id="footer">
     <div class="page-wrapper footer-wrapper">
       <div class="left-side-info">
@@ -187,10 +196,10 @@ def render_footer(site_name, tagline):
         </div>
       </div>
       <div class="copyright-info">
-        <p style="line-height: 1.7; font-size: 12px">© %s</p>
+        <p style="line-height: 1.7; font-size: 12px">© %s</p>%s
       </div>
     </div>
-  </footer>""" % (esc(site_name), esc(tagline), esc(site_name))
+  </footer>""" % (esc(site_name), esc(tagline), esc(site_name), links_block)
 
 
 # ---------- card / section renderers ----------
@@ -289,7 +298,7 @@ def build_post_page(detail, cat, cfg, tpl):
         .replace("{{DATE_DISPLAY}}", date_display(published_iso))
         .replace("{{CONTENT}}", transform_content(detail.get("content", ""), slug))
         .replace("{{HEADER}}", render_header(ALL_CATEGORIES, cfg["site_name"], cfg["logo"]))
-        .replace("{{FOOTER}}", render_footer(cfg["site_name"], cfg["tagline"]))
+        .replace("{{FOOTER}}", render_footer(cfg["site_name"], cfg["tagline"], ALL_PAGES))
     )
     out = HTML / slug / "index.html"
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -319,11 +328,33 @@ def build_category_page(cat, posts_in_cat, cfg, tpl):
         .replace("{{CATEGORY_GRID}}", grid)
         .replace("{{OG_IMAGE_TAG}}", og_image_tag(cfg))
         .replace("{{HEADER}}", render_header(ALL_CATEGORIES, cfg["site_name"], cfg["logo"]))
-        .replace("{{FOOTER}}", render_footer(cfg["site_name"], cfg["tagline"]))
+        .replace("{{FOOTER}}", render_footer(cfg["site_name"], cfg["tagline"], ALL_PAGES))
     )
     out = HTML / slug / "index.html"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(page, encoding="utf-8")
+    print("built", out.relative_to(ROOT))
+
+
+def build_page(page, cfg, tpl):
+    """Trang tinh (gioi thieu/lien he/chinh sach...) — khong danh muc, khong cover."""
+    slug = page["slug"]
+    url = "%s/%s/" % (cfg["site_url"], slug)
+    description = truncate(strip_html(page.get("content", "")), 220)
+
+    rendered = (
+        tpl.replace("{{TITLE}}", esc(page["title"]))
+        .replace("{{DESCRIPTION}}", esc(description))
+        .replace("{{URL}}", url)
+        .replace("{{SITE_NAME}}", esc(cfg["site_name"]))
+        .replace("{{OG_IMAGE_TAG}}", og_image_tag(cfg))
+        .replace("{{CONTENT}}", transform_content(page.get("content", ""), slug))
+        .replace("{{HEADER}}", render_header(ALL_CATEGORIES, cfg["site_name"], cfg["logo"]))
+        .replace("{{FOOTER}}", render_footer(cfg["site_name"], cfg["tagline"], ALL_PAGES))
+    )
+    out = HTML / slug / "index.html"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(rendered, encoding="utf-8")
     print("built", out.relative_to(ROOT))
 
 
@@ -342,16 +373,18 @@ def build_homepage(categories, posts_by_category, cfg, tpl):
         .replace("{{CATEGORY_SECTIONS}}", sections)
         .replace("{{OG_IMAGE_TAG}}", og_image_tag(cfg))
         .replace("{{HEADER}}", render_header(categories, cfg["site_name"], cfg["logo"]))
-        .replace("{{FOOTER}}", render_footer(cfg["site_name"], cfg["tagline"]))
+        .replace("{{FOOTER}}", render_footer(cfg["site_name"], cfg["tagline"], ALL_PAGES))
     )
     (HTML / "index.html").write_text(page, encoding="utf-8")
     print("built html/index.html (%d danh mục)" % len(categories))
 
 
-def build_sitemap(categories, posts, cfg):
+def build_sitemap(categories, posts, pages, cfg):
     site = cfg["site_url"]
     today = max(
-        [parse_iso(p["updated_at"]) for p in posts] + [parse_iso(c["created_at"]) for c in categories],
+        [parse_iso(p["updated_at"]) for p in posts]
+        + [parse_iso(c["created_at"]) for c in categories]
+        + [parse_iso(pg["updated_at"]) for pg in pages],
         default=datetime(2021, 1, 1, tzinfo=timezone.utc),
     ).strftime("%Y-%m-%d")
 
@@ -366,18 +399,24 @@ def build_sitemap(categories, posts, cfg):
             '    <url>\n        <loc>%s/%s/</loc>\n        <lastmod>%s</lastmod>\n        <priority>0.6</priority>\n    </url>'
             % (site, p["slug"], parse_iso(p["updated_at"]).strftime("%Y-%m-%d"))
         )
+    for pg in pages:
+        urls.append(
+            '    <url>\n        <loc>%s/%s/</loc>\n        <lastmod>%s</lastmod>\n        <priority>0.3</priority>\n    </url>'
+            % (site, pg["slug"], parse_iso(pg["updated_at"]).strftime("%Y-%m-%d"))
+        )
 
     out = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     out += "\n".join(urls) + "\n</urlset>\n"
     (HTML / "sitemap.xml").write_text(out, encoding="utf-8")
-    print("built html/sitemap.xml (1 trang chủ, %d danh mục, %d bài viết)" % (len(categories), len(posts)))
+    print("built html/sitemap.xml (1 trang chủ, %d danh mục, %d bài viết, %d trang tĩnh)" % (len(categories), len(posts), len(pages)))
 
 
 ALL_CATEGORIES = []  # duoc gan trong main(), dung lai boi build_post_page/build_category_page cho nav day du
+ALL_PAGES = []  # duoc gan trong main(), dung lai boi moi render_footer() cho link trang tinh day du
 
 
 def main():
-    global ALL_CATEGORIES
+    global ALL_CATEGORIES, ALL_PAGES
     cfg = site_config()
 
     categories = load_json(DATA / "categories.json", [])
@@ -397,9 +436,14 @@ def main():
             continue
         posts_by_category.setdefault(cat["id"], []).append(p)
 
+    pages = load_json(DATA / "pages.json", [])
+    pages.sort(key=lambda pg: parse_iso(pg["created_at"]))  # thu tu tao truoc -> sau, khop footer
+    ALL_PAGES = pages
+
     post_tpl = (TEMPLATES / "post.html").read_text(encoding="utf-8")
     category_tpl = (TEMPLATES / "category.html").read_text(encoding="utf-8")
     index_tpl = (TEMPLATES / "index.html").read_text(encoding="utf-8")
+    page_tpl = (TEMPLATES / "page.html").read_text(encoding="utf-8")
 
     built = 0
     for p in posts:
@@ -416,9 +460,21 @@ def main():
     for cat in categories:
         build_category_page(cat, posts_by_category.get(cat["id"], []), cfg, category_tpl)
 
+    built_pages = 0
+    for pg in pages:
+        detail_path = DATA / "pages" / pg["slug"] / "detail.json"
+        if not detail_path.exists():
+            print("WARN: thiếu", detail_path.relative_to(ROOT), "- bỏ qua")
+            continue
+        build_page(load_json(detail_path, {}), cfg, page_tpl)
+        built_pages += 1
+
     build_homepage(categories, posts_by_category, cfg, index_tpl)
-    build_sitemap(categories, posts, cfg)
-    print("Done: %d danh mục, %d bài viết (%d trang bài viết đã build)" % (len(categories), len(posts), built))
+    build_sitemap(categories, posts, pages, cfg)
+    print(
+        "Done: %d danh mục, %d bài viết (%d đã build), %d trang tĩnh (%d đã build)"
+        % (len(categories), len(posts), built, len(pages), built_pages)
+    )
 
 
 if __name__ == "__main__":

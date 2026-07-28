@@ -10,6 +10,7 @@ on:
       - 'backend/data/categories.json'
       - 'backend/data/posts.json'
       - 'backend/data/site.json'
+      - 'backend/data/pages.json'
   workflow_dispatch:
 
 permissions:
