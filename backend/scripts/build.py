@@ -242,7 +242,7 @@ def render_featured_section(top_posts):
         return ""
     featured = top_posts[:FEATURED_MAIN_COUNT]
     trending = top_posts[FEATURED_MAIN_COUNT:FEATURED_MAIN_COUNT + FEATURED_ASIDE_COUNT]
-    featured_html = "\n".join(render_card(p, "type-text picked-featured") for p in featured) or empty_note()
+    featured_html = "\n".join(render_card(p, "znews-native type-text picked-featured") for p in featured) or empty_note()
     trending_html = "\n".join(render_card(p, "type-text picked-trending short") for p in trending)
     return """        <section id="section-featured" class="section">
             <div class="section-content">
@@ -260,7 +260,7 @@ def render_first_category_section(cat, posts_in_cat):
     """Danh muc dau tien: nen vang (#section-multimedia co ::before mau #ffde76 trong
     page_common.css), toi da 6 bai, layout multimedia-layout (bai dau to, giua trang)."""
     shown = posts_in_cat[:FIRST_CATEGORY_COUNT]
-    grid = "\n".join(render_card(p, "type-picture picked-multi short") for p in shown) or empty_note()
+    grid = "\n".join(render_card(p, "znews-native type-picture picked-multi short") for p in shown) or empty_note()
     return """        <section id="section-multimedia" class="section first-category">
             <header class="section-title">
                 <h2>%s</h2>
@@ -320,8 +320,8 @@ def render_second_category_section(cat, posts_in_cat):
     giong het section-lifestyle (class second-category) cua templates/index.html."""
     main = posts_in_cat[:SECOND_CATEGORY_MAIN_COUNT]
     aside = posts_in_cat[SECOND_CATEGORY_MAIN_COUNT:SECOND_CATEGORY_MAIN_COUNT + SECOND_CATEGORY_ASIDE_COUNT]
-    main_html = "\n".join(render_card(p, "type-text") for p in main) or empty_note()
-    aside_html = "\n".join(render_card(p, "type-text") for p in aside)
+    main_html = "\n".join(render_card(p, "znews-native type-text") for p in main) or empty_note()
+    aside_html = "\n".join(render_card(p, "znews-native type-text") for p in aside)
     return """      <section id="section-lifestyle" class="section second-category">
         <header class="section-title">
           <h2>%s</h2>
@@ -425,7 +425,7 @@ def build_category_page(cat, posts_in_cat, cfg, tpl):
         FEATURED_MAIN_COUNT + FEATURED_ASIDE_COUNT + CATEGORY_LISTING_COUNT
     ]
 
-    featured_html = "\n".join(render_card(p, "type-text picked-featured") for p in featured) or empty_note()
+    featured_html = "\n".join(render_card(p, "znews-native type-text picked-featured") for p in featured) or empty_note()
     trending_html = "\n".join(render_card(p, "type-text picked-trending short") for p in trending)
     more_html = "\n".join(render_card(p) for p in more)
 
@@ -456,12 +456,27 @@ def build_page(page, cfg, tpl):
     url = "%s/%s/" % (cfg["site_url"], slug)
     description = truncate(strip_html(page.get("content", "")), 220)
 
+    json_ld = json.dumps(
+        {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "@id": url,
+            "name": page["title"],
+            "description": description,
+            "url": url,
+            "isPartOf": {"@type": "WebSite", "name": cfg["site_name"], "url": cfg["site_url"] + "/"},
+        },
+        ensure_ascii=False,
+        indent=2,
+    )
+
     rendered = (
         tpl.replace("{{TITLE}}", esc(page["title"]))
         .replace("{{DESCRIPTION}}", esc(description))
         .replace("{{URL}}", url)
         .replace("{{SITE_NAME}}", esc(cfg["site_name"]))
         .replace("{{OG_IMAGE_TAG}}", og_image_tag(cfg))
+        .replace("{{JSON_LD}}", json_ld)
         .replace("{{CONTENT}}", transform_content(page.get("content", ""), slug))
         .replace("{{HEADER}}", render_header(ALL_CATEGORIES, cfg["site_name"], cfg["logo"]))
         .replace("{{FOOTER}}", render_footer(cfg["site_name"], cfg["tagline"], ALL_PAGES))

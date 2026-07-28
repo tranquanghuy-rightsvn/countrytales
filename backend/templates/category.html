@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>{{TITLE}}</title>
     <meta name="description" content="{{DESCRIPTION}}">
+    <meta name="robots" content="index,follow">
     <link rel="canonical" href="{{URL}}">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="{{SITE_NAME}}">
@@ -26,6 +27,8 @@
     <div class="page-wrapper">
         <section id="category-header" class="section">
             <h1 style="margin-top: 40px"><a href="{{CATEGORY_URL}}" title="{{CATEGORY_NAME}}">{{CATEGORY_NAME}}</a></h1>
+        </section>
+        <section id="section-featured" class="section">
             <div class="section-content">
                 <div data-content="newsfeatured" class="article-list" id="category-list-1">
 {{CATEGORY_FEATURED}}
@@ -39,7 +42,7 @@
     <div class="page-wrapper">
         <section id="news-latest" class="section has-sidebar">
             <section class="section-content">
-                <div class="article-list listing-layout responsive" id="category-list-3">
+                <div class="article-list listing-layout responsive infinite-load" id="category-list-3">
 {{CATEGORY_MORE}}
                 </div>
             </section>
