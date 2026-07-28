@@ -1,18 +1,5 @@
 [
   {
-    "id": "be73769f-9fc6-4a77-8373-6c553b8e52b5",
-    "slug": "blo",
-    "title": "blo",
-    "description": "áda",
-    "category_id": "e806b6f0-56a6-4a5e-a0ab-90c5447ae012",
-    "category_slug": "cate-1",
-    "category_name": "Cate 1",
-    "author": "ád",
-    "cover": "blo/images/cover.webp",
-    "created_at": "2026-07-28T13:22:44.446Z",
-    "updated_at": "2026-07-28T13:22:44.446Z"
-  },
-  {
     "id": "8ebcc244-b2fe-4425-87fc-5d5a9946ae54",
     "slug": "sdasd",
     "title": "sdasd",
