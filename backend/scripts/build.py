@@ -33,7 +33,13 @@ HTML = ROOT / "html"
 DATA = BACKEND / "data"
 TEMPLATES = BACKEND / "templates"
 
-HOMEPAGE_POSTS_PER_CATEGORY = 8
+HOMEPAGE_FEATURED_COUNT = 8  # section-featured: 8 bai moi nhat toan site (3 featured + 5 trending)
+FEATURED_MAIN_COUNT = 3
+FEATURED_ASIDE_COUNT = 5
+FIRST_CATEGORY_COUNT = 6  # section-multimedia: danh muc dau tien, nen vang, toi da 6 bai
+SECOND_CATEGORY_MAIN_COUNT = 8  # section-lifestyle: danh muc con lai, cot chinh
+SECOND_CATEGORY_ASIDE_COUNT = 5  # section-lifestyle: cot phu (aside)
+RECOMMEND_COUNT = 12  # section-latest "DANH CHO BAN": bai con lai chua hien o tren
 PLACEHOLDER_COVER = "/images/thumbnail-placeholder.svg"
 
 
@@ -204,11 +210,11 @@ def render_footer(site_name, tagline, pages):
 
 # ---------- card / section renderers ----------
 
-def render_card(post):
+def render_card(post, modifier="type-text"):
     desc = ""
     if post.get("description"):
         desc = '\n            <p class="article-summary">%s</p>' % esc(truncate(post["description"]))
-    return """        <article class="article-item type-text">
+    return """        <article class="article-item %s">
             <p class="article-thumbnail">
                 <a href="/%s/">
                     <img src="%s" alt="%s" loading="lazy">
@@ -219,29 +225,91 @@ def render_card(post):
                     <a href="/%s/">%s</a>
                 </p>%s
             </header>
-        </article>""" % (post["slug"], cover_of(post), esc(post["title"]), post["slug"], esc(post["title"]), desc)
+        </article>""" % (modifier, post["slug"], cover_of(post), esc(post["title"]), post["slug"], esc(post["title"]), desc)
 
 
-def render_category_section(cat, posts_in_cat):
-    shown = posts_in_cat[:HOMEPAGE_POSTS_PER_CATEGORY]
-    cat_url = "/%s/" % cat["slug"]
-    more_link = ""
-    if len(posts_in_cat) > len(shown):
-        more_link = '\n                <a class="section-more" href="%s">Xem thêm →</a>' % cat_url
-    if shown:
-        grid = "\n".join(render_card(p) for p in shown)
-    else:
-        grid = '            <p class="empty-note">Chưa có bài viết trong danh mục này.</p>'
-    return """        <section class="section category-section">
-            <header class="section-title">
-                <h2><a href="%s">%s</a></h2>%s
-            </header>
+def empty_note():
+    return '            <p class="empty-note">Chưa có bài viết trong danh mục này.</p>'
+
+
+def render_featured_section(top_posts):
+    """8 bai moi nhat toan site (khong theo danh muc): 3 bai lon (picked-featured)
+    + 5 bai nho ben canh (picked-trending), giong het section-featured cua templates/index.html."""
+    if not top_posts:
+        return ""
+    featured = top_posts[:FEATURED_MAIN_COUNT]
+    trending = top_posts[FEATURED_MAIN_COUNT:FEATURED_MAIN_COUNT + FEATURED_ASIDE_COUNT]
+    featured_html = "\n".join(render_card(p, "type-text picked-featured") for p in featured) or empty_note()
+    trending_html = "\n".join(render_card(p, "type-text picked-trending short") for p in trending)
+    return """        <section id="section-featured" class="section">
             <div class="section-content">
-                <div class="article-grid">
+                <div data-content="newsfeatured" class="article-list" id="list-first">
+%s
+                </div>
+                <div data-content="newstrending" class="article-list listing-layout" id="list-second">
 %s
                 </div>
             </div>
-        </section>""" % (cat_url, esc(cat["name"]), more_link, grid)
+        </section>""" % (featured_html, trending_html)
+
+
+def render_first_category_section(cat, posts_in_cat):
+    """Danh muc dau tien: nen vang (#section-multimedia co ::before mau #ffde76 trong
+    page_common.css), toi da 6 bai, layout multimedia-layout (bai dau to, giua trang)."""
+    shown = posts_in_cat[:FIRST_CATEGORY_COUNT]
+    grid = "\n".join(render_card(p, "type-picture picked-multi short") for p in shown) or empty_note()
+    return """        <section id="section-multimedia" class="section first-category">
+            <header class="section-title">
+                <h2>%s</h2>
+            </header>
+            <div class="section-content">
+                <div class="article-list multimedia-layout" id="list-first-category">
+%s
+                </div>
+                <div class="article-list" id="list-first-category-aside"></div>
+            </div>
+        </section>""" % (esc(cat["name"]), grid)
+
+
+def render_recommend_section(posts):
+    """section-latest "DANH CHO BAN": nhung bai con lai chua hien o section-featured/first-category."""
+    shown = posts[:RECOMMEND_COUNT]
+    if not shown:
+        return ""
+    grid = "\n".join(render_card(p, "type-text") for p in shown)
+    return """        <section id="section-latest" class="section has-sidebar">
+            <header class="section-title">
+                <h3>DÀNH CHO BẠN</h3>
+            </header>
+            <section class="section-content">
+                <div class="article-list listing-layout responsive unique" id="list-recommend">
+%s
+                </div>
+                <aside class="section-sidebar"></aside>
+            </section>
+        </section>""" % grid
+
+
+def render_second_category_section(cat, posts_in_cat):
+    """Danh muc thu 2 tro di: cot chinh toi da 8 bai + cot phu (aside) toi da 5 bai tiep theo,
+    giong het section-lifestyle (class second-category) cua templates/index.html."""
+    main = posts_in_cat[:SECOND_CATEGORY_MAIN_COUNT]
+    aside = posts_in_cat[SECOND_CATEGORY_MAIN_COUNT:SECOND_CATEGORY_MAIN_COUNT + SECOND_CATEGORY_ASIDE_COUNT]
+    main_html = "\n".join(render_card(p, "type-text") for p in main) or empty_note()
+    aside_html = "\n".join(render_card(p, "type-text") for p in aside)
+    return """      <section id="section-lifestyle" class="section second-category">
+        <header class="section-title">
+          <h2>%s</h2>
+        </header>
+        <div class="section-content ">
+          <div class="article-list lifestyle-layout" data-content="newsfeatured" id="list-second-category">
+%s
+          </div>
+          <div class="article-list" data-content="newstrending" id="list-second-category-aside">
+%s
+          </div>
+        </div>
+      </section>""" % (esc(cat["name"]), main_html, aside_html)
 
 
 # ---------- content transform ----------
@@ -358,12 +426,45 @@ def build_page(page, cfg, tpl):
     print("built", out.relative_to(ROOT))
 
 
-def build_homepage(categories, posts_by_category, cfg, tpl):
+def build_homepage(categories, posts, posts_by_category, cfg, tpl):
+    """Bo cuc trang chu bam sat templates/index.html:
+    - 1 page-wrapper dau: section-featured (8 bai moi nhat toan site)
+      + section-multimedia (danh muc dau tien, nen vang, toi da 6 bai)
+      + section-latest "DANH CHO BAN" (bai con lai chua hien o tren, toi da 12 bai)
+    - Moi danh muc con lai: 1 page-wrapper rieng, section-lifestyle (second-category)."""
     title = "%s – %s" % (cfg["site_name"], cfg["tagline"])
     description = cfg["tagline"]
-    sections = "\n\n".join(render_category_section(c, posts_by_category.get(c["id"], [])) for c in categories)
+
+    top_group = []
+    shown_slugs = set()
+
+    featured_posts = posts[:HOMEPAGE_FEATURED_COUNT]
+    featured_section = render_featured_section(featured_posts)
+    if featured_section:
+        top_group.append(featured_section)
+        shown_slugs.update(p["slug"] for p in featured_posts)
+
+    first_cat, rest_cats = (categories[0], categories[1:]) if categories else (None, [])
+    if first_cat:
+        first_cat_posts = posts_by_category.get(first_cat["id"], [])
+        top_group.append(render_first_category_section(first_cat, first_cat_posts))
+        shown_slugs.update(p["slug"] for p in first_cat_posts[:FIRST_CATEGORY_COUNT])
+
+    remaining_posts = [p for p in posts if p["slug"] not in shown_slugs]
+    recommend_section = render_recommend_section(remaining_posts)
+    if recommend_section:
+        top_group.append(recommend_section)
+
+    blocks = []
+    if top_group:
+        blocks.append('    <div class="page-wrapper">\n' + "\n".join(top_group) + "\n    </div>")
+    for cat in rest_cats:
+        section = render_second_category_section(cat, posts_by_category.get(cat["id"], []))
+        blocks.append('      <div class="page-wrapper">\n' + section + "\n      </div>")
+
+    sections = "\n".join(blocks)
     if not sections:
-        sections = '        <p class="empty-note">Chưa có danh mục nào.</p>'
+        sections = '    <p class="empty-note">Chưa có danh mục nào.</p>'
 
     page = (
         tpl.replace("{{TITLE}}", esc(title))
@@ -469,7 +570,7 @@ def main():
         build_page(load_json(detail_path, {}), cfg, page_tpl)
         built_pages += 1
 
-    build_homepage(categories, posts_by_category, cfg, index_tpl)
+    build_homepage(categories, posts, posts_by_category, cfg, index_tpl)
     build_sitemap(categories, posts, pages, cfg)
     print(
         "Done: %d danh mục, %d bài viết (%d đã build), %d trang tĩnh (%d đã build)"
