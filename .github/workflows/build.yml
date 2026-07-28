@@ -2,7 +2,7 @@ name: Build HTML from data
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     # Chi trigger o categories.json/posts.json — luon la commit CUOI cua moi lan them/sua/xoa
     # tren CMS. Nho vay CI khong bao gio build trang thai do dang, va moi thao tac chi build 1 lan.
     # Commit cua CI (chi dung html/) khong tu trigger lai (xem .gitignore/README).
@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: master
           fetch-depth: 0
 
       - name: Build & push (retry neu co commit moi chen vao giua luc build)
@@ -39,7 +39,7 @@ jobs:
               break
             fi
             git commit -m "CI: build html from data"
-            if git push origin HEAD:main; then
+            if git push origin HEAD:master; then
               echo "Push thanh cong (lan $i)."
               break
             fi
@@ -47,7 +47,19 @@ jobs:
               echo "::error::Push that bai sau 5 lan thu."
               exit 1
             fi
-            echo "Push bi tu choi (co commit moi tren main) — fetch va build lai (lan $i)..."
-            git fetch origin main
-            git reset --hard origin/main
+            echo "Push bi tu choi (co commit moi tren master) — fetch va build lai (lan $i)..."
+            git fetch origin master
+            git reset --hard origin/master
           done
+
+      # Deploy truc tiep bang wrangler (Direct Upload) — KHONG di qua Cloudflare git integration,
+      # nen KHONG tinh vao quota 500 build/thang cua Cloudflare Pages free tier. Deploy dung ban
+      # html/ vua build o buoc tren, khong phu thuoc Cloudflare tu clone lai repo.
+      # Yeu cau: project Cloudflare Pages da tao san dang "Direct Upload" (khong noi git),
+      # va 2 secret CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID da khai bao trong repo Settings.
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy html --project-name=countrytales --branch=master
