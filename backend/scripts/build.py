@@ -89,7 +89,7 @@ def site_config():
     cfg = load_json(DATA / "site.json", {})
     return {
         "site_name": cfg.get("site_name") or "CountryTales",
-        "site_url": (cfg.get("site_url") or "https://countrytales.vn").rstrip("/"),
+        "site_url": (cfg.get("site_url") or "https://countrytales.net").rstrip("/"),
         "tagline": cfg.get("tagline") or "Tin tức mới nhất mỗi ngày",
         # logo: hien o vi tri logo header (fallback ve text neu chua cau hinh/chua co file).
         # banner: CHI dung lam og:image mac dinh cho trang chu/danh muc, khong hien truc tiep.
@@ -597,6 +597,11 @@ def build_sitemap(categories, posts, pages, cfg):
     out += "\n".join(urls) + "\n</urlset>\n"
     (HTML / "sitemap.xml").write_text(out, encoding="utf-8")
     print("built html/sitemap.xml (1 trang chủ, %d danh mục, %d bài viết, %d trang tĩnh)" % (len(categories), len(posts), len(pages)))
+
+    (HTML / "robots.txt").write_text(
+        "User-agent: *\nAllow: /\n\nSitemap: %s/sitemap.xml\n" % site, encoding="utf-8"
+    )
+    print("built html/robots.txt")
 
 
 ALL_CATEGORIES = []  # duoc gan trong main(), dung lai boi build_post_page/build_category_page cho nav day du
