@@ -20,7 +20,7 @@
 #page-article .section.has-sidebar .section-content { padding-right: 340px; }
 
 .the-article img.mobile { display: none !important; }
-.the-article { z-index: 9; font-size: 1rem; position: relative; padding: 50px 0 50px; }
+.the-article { z-index: 9; font-size: 1rem; position: relative; padding: 15px 0 50px; }
 .the-article:nth-child(n+3) { margin-top: 0; }
 .the-article .main { background: #fff; float: left; width: 100%; position: relative; }
 

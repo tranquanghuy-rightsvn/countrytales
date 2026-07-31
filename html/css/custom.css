@@ -104,14 +104,49 @@ footer .logo {
   padding: 10px 0;
 }
 
-/* Fix cứng: nội dung bị menu fixed che (chưa xác định được rule nào đang chặn padding-top
-   có sẵn) — ép margin-top để chắc chắn xuống dòng, không phụ thuộc rule khác nữa. Chỉ áp dụng
-   cho .page-wrapper NGAY SAU header (script hoặc không), tránh đẩy luôn các block dưới. */
-#page-homepage > #zing-header + div.page-wrapper,
-#page-homepage > #zing-header + script + div.page-wrapper {
-  margin-top: 60px !important;
+/* Fix tận gốc lỗi "menu che nội dung": #zing-header vốn position:fixed (main.css) nên các rule
+   bù trừ padding-top:52px chỉ áp vào ĐÚNG cái div ngay-sau-header (theo selector
+   "#zing-header + script + div.page-wrapper") — hễ có script nào (vd adsbygoogle.js chèn/đổi
+   DOM trong <body>) làm cấu trúc/class thay đổi là selector đó gãy ngay, nội dung mất phần bù
+   và bị header đè lên. Đổi hẳn sang position:sticky: trình duyệt tự chừa đúng 52px cho header
+   trong luồng layout, không phụ thuộc div nào theo sau nữa -> không thể gãy được nữa. */
+#zing-header {
+  position: sticky !important;
 }
-#page-category > #zing-header + div.page-wrapper,
-#page-category > #zing-header + script + div.page-wrapper {
-  margin-top: 80px !important;
+/* Sticky đã tự chừa chỗ rồi nên huỷ mọi padding-top bù trừ cũ (main.css/page_common.css/
+   article.css) để không bị cộng dồn thành khoảng trắng thừa dưới header. */
+#page-homepage #zing-header + div,
+#page-homepage #zing-header + div.page-wrapper,
+#page-homepage #zing-header + script + div,
+#page-homepage #zing-header + script + div.page-wrapper,
+#page-category #zing-header + div,
+#page-category #zing-header + div.page-wrapper,
+#page-category #zing-header + script + div,
+#page-category #zing-header + script + div.page-wrapper,
+#page-article #zing-header + div,
+#page-article #zing-header + div.page-wrapper,
+#page-article #zing-header + script + div,
+#page-article #zing-header + script + div.page-wrapper,
+#page-static #zing-header + div,
+#page-static #zing-header + div.page-wrapper,
+#page-static #zing-header + script + div,
+#page-static #zing-header + script + div.page-wrapper {
+  padding-top: 0;
+}
+/* Thêm khoảng cách riêng cho trang chủ (content cách menu thêm ~20px) — đặt trên #section-featured
+   (id cố định của section nội dung đầu tiên), KHÔNG đặt trên #page-homepage vì header giờ là
+   sticky và là con trực tiếp của body: padding-top trên body sẽ đẩy luôn cả header, sai ý muốn
+   (chỉ muốn đẩy content, menu vẫn dính sát mép trên như cũ). */
+#page-homepage #section-featured {
+  margin-top: 20px;
+}
+
+/* Tiêu đề danh mục (category) to hơn + căn giữa (page_category.css mặc định 2rem, căn trái;
+   chỉ bản theme='template2' mới to+center sẵn nhưng site không dùng theme đó). */
+#page-category #category-header {
+  text-align: center;
+}
+#page-category #category-header h1 {
+  font-size: 3rem;
+  padding-right: 0;
 }
