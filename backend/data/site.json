@@ -4,6 +4,7 @@
   "site_url": "https://countrytales.net",
   "logo": "images/logo.png",
   "banner": "images/banner.webp",
-  "favicon": "images/favicon.png"
+  "favicon": "images/favicon.png",
+  "analytics_code": "<script async src=\"https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9168504195390383\"\n     crossorigin=\"anonymous\"></script>",
+  "ads_txt": "google.com, pub-9168504195390383, DIRECT, f08c47fec0942fa0"
 }
-
