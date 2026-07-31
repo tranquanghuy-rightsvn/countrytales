@@ -97,8 +97,11 @@ def site_config():
         "logo": (cfg.get("logo") or "").strip().lstrip("/"),
         "banner": (cfg.get("banner") or "").strip().lstrip("/"),
         "favicon": (cfg.get("favicon") or "").strip().lstrip("/"),
-        "ga_id": (cfg.get("ga_id") or "").strip(),
-        "adsense_pub_id": (cfg.get("adsense_pub_id") or "").strip(),
+        # analytics_code/ads_txt: NGUYEN VAN khach dan vao CMS, khong parse/validate dinh dang —
+        # khach muon gan ma tracking gi (GA, Facebook Pixel, v.v.) hoac dong ads.txt nao cung duoc,
+        # dan sai thi khach tu chiu, build.py chi chep nguyen van khong can thiep.
+        "analytics_code": cfg.get("analytics_code") or "",
+        "ads_txt": cfg.get("ads_txt") or "",
     }
 
 
@@ -110,20 +113,9 @@ def favicon_tag(cfg):
 
 
 def analytics_tag(cfg):
-    """Snippet Google Analytics (gtag.js), dat cao nhat trong <head> theo dung khuyen nghi cua
-    Google. Rong neu chua cau hinh ga_id — khong in script thua."""
-    ga_id = cfg.get("ga_id")
-    if not ga_id:
-        return ""
-    return (
-        '    <script async src="https://www.googletagmanager.com/gtag/js?id=%s"></script>\n'
-        "    <script>\n"
-        "    window.dataLayer = window.dataLayer || [];\n"
-        "    function gtag(){dataLayer.push(arguments);}\n"
-        "    gtag('js', new Date());\n"
-        "    gtag('config', '%s');\n"
-        "    </script>"
-    ) % (ga_id, ga_id)
+    """Ma tracking (nguyen van, khach tu dan trong CMS) dat cao nhat trong <head> — dung khuyen
+    nghi chung cua Google Analytics/GTM/pixel... Rong neu khach chua dan gi."""
+    return cfg.get("analytics_code") or ""
 
 
 def og_image_tag(cfg):
@@ -626,15 +618,16 @@ def build_sitemap(categories, posts, pages, cfg):
     )
     print("built html/robots.txt")
 
+    # ads.txt: ghi NGUYEN VAN noi dung khach dan trong CMS (khong tu dung dong "google.com, ...")
+    # — khach muon khai bao mang quang cao nao/bao nhieu dong deu duoc, dan sai thi khach tu chiu.
     ads_txt = HTML / "ads.txt"
-    if cfg.get("adsense_pub_id"):
-        ads_txt.write_text(
-            "google.com, %s, DIRECT, f08c47fec0942fa0\n" % cfg["adsense_pub_id"], encoding="utf-8"
-        )
+    if cfg.get("ads_txt"):
+        content = cfg["ads_txt"].strip() + "\n"
+        ads_txt.write_text(content, encoding="utf-8")
         print("built html/ads.txt")
     elif ads_txt.exists():
         ads_txt.unlink()
-        print("removed html/ads.txt (adsense_pub_id trống)")
+        print("removed html/ads.txt (nội dung trống)")
 
 
 ALL_CATEGORIES = []  # duoc gan trong main(), dung lai boi build_post_page/build_category_page cho nav day du
