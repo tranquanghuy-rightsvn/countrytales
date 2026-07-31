@@ -97,6 +97,8 @@ def site_config():
         "logo": (cfg.get("logo") or "").strip().lstrip("/"),
         "banner": (cfg.get("banner") or "").strip().lstrip("/"),
         "favicon": (cfg.get("favicon") or "").strip().lstrip("/"),
+        "ga_id": (cfg.get("ga_id") or "").strip(),
+        "adsense_pub_id": (cfg.get("adsense_pub_id") or "").strip(),
     }
 
 
@@ -105,6 +107,23 @@ def favicon_tag(cfg):
     if not cfg.get("favicon"):
         return ""
     return '    <link rel="icon" type="image/png" sizes="24x24" href="/%s">' % cfg["favicon"]
+
+
+def analytics_tag(cfg):
+    """Snippet Google Analytics (gtag.js), dat cao nhat trong <head> theo dung khuyen nghi cua
+    Google. Rong neu chua cau hinh ga_id — khong in script thua."""
+    ga_id = cfg.get("ga_id")
+    if not ga_id:
+        return ""
+    return (
+        '    <script async src="https://www.googletagmanager.com/gtag/js?id=%s"></script>\n'
+        "    <script>\n"
+        "    window.dataLayer = window.dataLayer || [];\n"
+        "    function gtag(){dataLayer.push(arguments);}\n"
+        "    gtag('js', new Date());\n"
+        "    gtag('config', '%s');\n"
+        "    </script>"
+    ) % (ga_id, ga_id)
 
 
 def og_image_tag(cfg):
@@ -416,6 +435,7 @@ def build_post_page(detail, cat, posts, cfg, tpl):
         .replace("{{SITE_NAME}}", esc(cfg["site_name"]))
         .replace("{{OG_IMAGE_TAG}}", og_image)
         .replace("{{FAVICON_TAG}}", favicon_tag(cfg))
+        .replace("{{ANALYTICS_TAG}}", analytics_tag(cfg))
         .replace("{{PUBLISHED_ISO}}", esc(published_iso))
         .replace("{{JSON_LD}}", json_ld)
         .replace("{{CATEGORY_URL}}", "/%s/" % cat["slug"])
@@ -466,6 +486,7 @@ def build_category_page(cat, posts_in_cat, cfg, tpl):
         .replace("{{CATEGORY_MORE}}", more_html)
         .replace("{{OG_IMAGE_TAG}}", og_image_tag(cfg))
         .replace("{{FAVICON_TAG}}", favicon_tag(cfg))
+        .replace("{{ANALYTICS_TAG}}", analytics_tag(cfg))
         .replace("{{HEADER}}", render_header(ALL_CATEGORIES, cfg["site_name"], cfg["logo"]))
         .replace("{{FOOTER}}", render_footer(cfg["site_name"], cfg["tagline"], ALL_PAGES))
     )
@@ -502,6 +523,7 @@ def build_page(page, cfg, tpl):
         .replace("{{SITE_NAME}}", esc(cfg["site_name"]))
         .replace("{{OG_IMAGE_TAG}}", og_image_tag(cfg))
         .replace("{{FAVICON_TAG}}", favicon_tag(cfg))
+        .replace("{{ANALYTICS_TAG}}", analytics_tag(cfg))
         .replace("{{JSON_LD}}", json_ld)
         .replace("{{CONTENT}}", transform_content(page.get("content", ""), slug))
         .replace("{{HEADER}}", render_header(ALL_CATEGORIES, cfg["site_name"], cfg["logo"]))
@@ -560,6 +582,7 @@ def build_homepage(categories, posts, posts_by_category, cfg, tpl):
         .replace("{{CATEGORY_SECTIONS}}", sections)
         .replace("{{OG_IMAGE_TAG}}", og_image_tag(cfg))
         .replace("{{FAVICON_TAG}}", favicon_tag(cfg))
+        .replace("{{ANALYTICS_TAG}}", analytics_tag(cfg))
         .replace("{{HEADER}}", render_header(categories, cfg["site_name"], cfg["logo"]))
         .replace("{{FOOTER}}", render_footer(cfg["site_name"], cfg["tagline"], ALL_PAGES))
     )
@@ -602,6 +625,16 @@ def build_sitemap(categories, posts, pages, cfg):
         "User-agent: *\nAllow: /\n\nSitemap: %s/sitemap.xml\n" % site, encoding="utf-8"
     )
     print("built html/robots.txt")
+
+    ads_txt = HTML / "ads.txt"
+    if cfg.get("adsense_pub_id"):
+        ads_txt.write_text(
+            "google.com, %s, DIRECT, f08c47fec0942fa0\n" % cfg["adsense_pub_id"], encoding="utf-8"
+        )
+        print("built html/ads.txt")
+    elif ads_txt.exists():
+        ads_txt.unlink()
+        print("removed html/ads.txt (adsense_pub_id trống)")
 
 
 ALL_CATEGORIES = []  # duoc gan trong main(), dung lai boi build_post_page/build_category_page cho nav day du
