@@ -103,3 +103,15 @@ footer .logo {
   font-size: 0.9rem;
   padding: 10px 0;
 }
+
+/* Fix cứng: nội dung bị menu fixed che (chưa xác định được rule nào đang chặn padding-top
+   có sẵn) — ép margin-top để chắc chắn xuống dòng, không phụ thuộc rule khác nữa. Chỉ áp dụng
+   cho .page-wrapper NGAY SAU header (script hoặc không), tránh đẩy luôn các block dưới. */
+#page-homepage > #zing-header + div.page-wrapper,
+#page-homepage > #zing-header + script + div.page-wrapper {
+  margin-top: 60px !important;
+}
+#page-category > #zing-header + div.page-wrapper,
+#page-category > #zing-header + script + div.page-wrapper {
+  margin-top: 80px !important;
+}

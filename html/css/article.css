@@ -1,82 +1,117 @@
-/* Article detail page (backend/templates/post.html) — cleaned up from the cloned theme's
-   inline .the-article-* rules (dropped the 340px sidebar gutter: we have no sidebar). */
-.the-article {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 40px 0 60px;
-  position: relative;
+/* Article detail page (backend/templates/post.html) — chép nguyên văn từ <style> nội tuyến
+   trong templates/post.html (rule #page-article / .the-article*), không tự chế lại. Rule
+   ".the-article .main{padding-right:340px}" ở >=1024px chính là thứ tạo cột nội dung hẹp
+   (không phải .the-article có max-width cố định như suy đoán trước đó). */
+
+/* #page-static: khong ton tai trong templates/post.html that (site goc khong co trang tinh),
+   nhung backend/templates/page.html dung chung class .the-article/.the-article-body + load
+   chinh file nay, nen them vao day de tranh bi menu fixed (#zing-header, cao 52px) de len. */
+#page-article #zing-header + div,
+#page-article #zing-header + div.page-wrapper,
+#page-article #zing-header + script + div,
+#page-article #zing-header + script + div.page-wrapper,
+#page-static #zing-header + div,
+#page-static #zing-header + div.page-wrapper,
+#page-static #zing-header + script + div,
+#page-static #zing-header + script + div.page-wrapper {
+  padding-top: 52px;
 }
-.the-article-header {
-  width: 100%;
-  margin-bottom: 20px;
+#page-article { font-weight: normal; margin-bottom: 50px; position: relative; }
+#page-article .section.has-sidebar .section-content { padding-right: 340px; }
+
+.the-article img.mobile { display: none !important; }
+.the-article { z-index: 9; font-size: 1rem; position: relative; padding: 50px 0 50px; }
+.the-article:nth-child(n+3) { margin-top: 0; }
+.the-article .main { background: #fff; float: left; width: 100%; position: relative; }
+
+.the-article-header { float: left; width: 100%; margin-bottom: 10px; }
+.the-article-title {
+  font-family: 'Noto Serif', serif;
+  font-size: 2.4em;
+  color: #000;
+  line-height: 1.2;
+  letter-spacing: -1px;
+  margin: 10px 0;
+  padding-bottom: 60px;
 }
 .the-article-category {
   text-transform: uppercase;
   font-family: Arial, Helvetica, sans-serif;
   letter-spacing: 1px;
-  font-size: 0.85em;
-  font-weight: 700;
+  font-size: 1em;
+  font-weight: 300;
+  margin-top: 20px;
 }
-.the-article-category a {
-  color: #dd3333;
-}
-.the-article-category a:hover {
-  color: #3399cc;
-}
-.the-article-title {
-  font-family: 'Noto Serif', serif;
-  font-size: 2.2em;
-  color: #000;
-  line-height: 1.25;
-  letter-spacing: -0.5px;
-  margin: 12px 0;
-}
+.the-article-category a { color: #666; }
+.the-article-category a:hover { color: #3399cc; }
 .the-article-meta {
-  margin: 8px 0 0;
+  margin: 15px 0 8px;
+  float: left;
+  width: 100%;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 0.85em;
   color: #666;
 }
+.the-article-meta > * { display: inline-block; margin-right: 10px; }
+.the-article-meta > *:last-child:after { display: none; }
+
 .the-article-body {
+  float: left;
   width: 100%;
+  position: relative;
   font-family: 'Noto Serif', serif;
   color: #333;
-  line-height: 1.7;
-  font-size: 1.15em;
+  line-height: 1.618;
+  font-size: 1.1em;
 }
-.the-article-body p {
-  margin: 18px 0;
-}
-.the-article-body img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto;
-}
-.the-article-body figure {
-  margin: 24px 0;
-}
-.the-article-body figcaption {
-  font-style: italic;
-  text-align: center;
-  font-size: 0.85em;
-  color: #666;
-  margin-top: 8px;
-}
-.the-article-body ul,
-.the-article-body ol {
-  padding-left: 32px;
-  margin: 18px 0;
-}
-.the-article-body a {
+.the-article-body > *:nth-child(1) { float: none; margin-top: 0 !important; width: 100%; }
+.the-article-body > ul { list-style: inherit; padding-left: 40px; margin: 18px 0; }
+.the-article-body > ul li { margin-bottom: 10px; }
+.the-article-body > ul li:last-child { margin-bottom: 0; }
+.the-article-body p { margin: 18px 0; }
+.the-article-body p + br { display: none; }
+.the-article-body p a[href^="http"] {
   color: #004861;
+  text-decoration: none;
   border-bottom: 1px solid #0078a7;
 }
+.the-article-body img { max-width: 100%; display: block; height: auto; }
+.the-article-body p img { float: left; width: 100%; height: auto; margin-bottom: 18px; }
+.the-article-body p img[style*="left"] { float: left; width: 40%; height: auto; margin: 8px 15px 10px 0; }
+.the-article-body p img[style*="right"] { width: 40%; float: right; height: auto; margin: 8px 0 10px 15px; }
+.the-article-body > h1 { display: none; }
+
+@media (max-width: 1023px) {
+  #page-article > .page-wrapper { padding: 0 5%; }
+  .the-article .the-article-body p img { max-width: initial !important; margin-left: initial !important; }
+}
+
 @media (max-width: 719px) {
-  .the-article-title {
-    font-size: 1.6em;
-  }
-  .the-article-body {
-    font-size: 1em;
-  }
+  .the-article-body .article-item { width: 100% !important; height: 120px; padding: 10px 10px 10px 190px; }
+  .the-article-body .article-item .article-thumbnail { width: 180px; }
+  .the-article-body .article-item .article-title { font-size: 0.8em; }
+}
+
+/* Cac breakpoint duoi day dung dung "width:" (khong phai "max-width:") y het ban goc
+   templates/post.html — chi khop chinh xac 1 kich thuoc man hinh, khong phai khoang. */
+@media (width: 768px) {
+  .the-article { padding: 60px 0 0; background: #fff; margin-top: 0; }
+}
+@media (width: 720px) {
+  .the-article-body { font-size: 20px; line-height: 32px !important; }
+  .the-article-body p { margin: 18px 0; }
+  .the-article { box-shadow: none; padding: 60px 0 0; overflow: hidden; }
+}
+@media (width: 320px) {
+  .the-article-title { font-size: 2em; }
+  .the-article { box-shadow: none; padding: 40px 0 0; }
+  .the-article-body .article-item { padding-left: 160px; height: 100px; }
+  .the-article-body .article-item .article-thumbnail { width: 150px; }
+}
+
+@media (min-width: 1024px) {
+  .the-article .main { padding: 0; padding-right: 340px; }
+}
+@media (min-width: 1360px) {
+  .the-article-title { font-size: 2.6em; }
 }

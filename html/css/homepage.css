@@ -89,6 +89,15 @@
   border-radius: 4px;
 }
 
+/* Them padding-top rieng cho #page-homepage o man hinh nho (chep tu templates/index.html) —
+   cong voi padding-top:52px chung (page_common.css) de bu khoang cach menu fixed. */
+@media (max-width: 1023px) {
+  #page-homepage { padding-top: 20px; }
+}
+@media (width: 320px) {
+  #page-homepage { padding-top: 70px; }
+}
+
 @media (max-width: 1359px) {
   #page-homepage #section-lifestyle div[data-content='newsfeatured'] .article-item { width: 32%; }
   #page-homepage #section-lifestyle div[data-content='newsfeatured'] .article-item:first-child {
